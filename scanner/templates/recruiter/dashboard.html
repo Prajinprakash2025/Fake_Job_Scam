@@ -1,0 +1,791 @@
+{% extends 'base.html' %}
+
+{% block title %}Recruiter Dashboard | SafeCareer{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- Dashboard Specific Container --- */
+    .dashboard-wrapper {
+        display: flex;
+        min-height: calc(100vh - 70px);
+        background: #f8fafc;
+        position: relative;
+    }
+
+    /* --- Sidebar --- */
+    .dashboard-sidebar {
+        width: 280px;
+        background: white;
+        border-right: 1px solid #e2e8f0;
+        padding: 30px 20px;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+        z-index: 100;
+    }
+
+    .sidebar-title {
+        color: #0f172a;
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 30px;
+        padding-left: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sidebar-item {
+        padding: 14px 20px;
+        border-radius: 10px;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: 0.2s;
+    }
+
+    .sidebar-item:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .sidebar-item.active {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .sidebar-item span.badge {
+        margin-left: auto;
+        background: #bfdbfe;
+        color: #1d4ed8;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+    }
+
+    .sidebar-action {
+        margin-top: 20px;
+        padding: 20px 10px 0 10px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    /* --- Main Content --- */
+    .dashboard-main {
+        flex: 1;
+        padding: 40px 50px;
+        max-width: 1200px;
+        overflow-x: hidden;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        color: #0f172a;
+        font-weight: 800;
+        margin-bottom: 25px;
+    }
+
+    /* Verification Alert */
+    .alert-warning {
+        background-color: #fffbeb;
+        color: #b45309;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border-left: 4px solid #f59e0b;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .alert-warning p { margin: 5px 0 0 0; font-size: 14px; }
+    .alert-warning button { background: #f59e0b; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+    /* Buttons */
+    .btn-primary {
+        width: 100%;
+        padding: 14px;
+        background: #2563eb;
+        color: white;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.25); }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s;
+        border: 1px solid transparent;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .btn-resume {
+        background: #eff6ff;
+        color: #2563eb;
+        border-color: #bfdbfe;
+    }
+    .btn-resume:hover {
+        background: #2563eb;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(37,99,235,0.2);
+    }
+
+    .btn-cover {
+        background: #f5f3ff;
+        color: #7c3aed;
+        border-color: #ddd6fe;
+    }
+    .btn-cover:hover {
+        background: #7c3aed;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(124,58,237,0.2);
+    }
+
+    .btn-disabled {
+        background: #f8fafc;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+    }
+
+    /* Stats Cards */
+    .stats-row {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px; margin-bottom: 30px;
+    }
+    .stat-card {
+        background: white; padding: 25px 20px; border-radius: 14px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s ease; border-left: 5px solid #2563eb;
+    }
+    .stat-card:nth-child(2) { border-left-color: #f59e0b; }
+    .stat-card:nth-child(3) { border-left-color: #10b981; }
+    .stat-card:nth-child(4) { border-left-color: #ef4444; }
+    .stat-label { color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+    .stat-number { font-size: 2rem; font-weight: 800; margin-top: 8px; color: #0f172a; }
+
+    /* Table */
+    .data-card { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); overflow: hidden; border: 1px solid #e2e8f0; }
+    .data-card-header { padding: 20px 25px; border-bottom: 1px solid #e2e8f0; background: #fff; font-weight: 700; color: #0f172a; font-size: 1.1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8fafc; color: #475569; padding: 15px 25px; text-align: left; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 18px 25px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #f8fafc; }
+    .job-title { font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px; font-size: 1rem; }
+    .job-date { font-size: 0.85rem; color: #64748b; }
+
+    /* Status Badges */
+    .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-sm {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.15s ease-in-out;
+        border: 1px solid transparent;
+        font-family: inherit;
+    }
+
+    .btn-edit { 
+        background: #198754; 
+        color: white;
+    }
+    .btn-edit:hover { 
+        background: #157347; 
+        color: white; 
+    }
+    
+    .btn-delete { 
+        background: #dc3545; 
+        color: white; 
+        margin-left: 5px; 
+    }
+    .btn-delete:hover { 
+        background: #bb2d3b; 
+        color: white; 
+    }
+
+    /* ML Risk Tags */
+    .ml-tag { font-size: 0.75rem; padding: 6px 10px; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
+    .ml-safe { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+    .ml-danger { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .ml-pending { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+
+    .tag-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .tag-pill.primary {
+        background: #eef2ff;
+        border-color: #c7d2fe;
+        color: #312e81;
+    }
+    .tag-pill.success {
+        background: #ecfdf3;
+        border-color: #bbf7d0;
+        color: #166534;
+    }
+
+    .empty-msg { padding: 50px 20px; text-align: center; color: #64748b; font-size: 1rem; }
+    .empty-msg h3 { color: #0f172a; margin-bottom: 10px; }
+
+    /* Toggle Button */
+    .mobile-toggle { display: none; background: white; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; color: #0f172a; align-items: center; gap: 8px; margin-bottom: 20px; }
+    
+    .tab-section { display: none; animation: fadeIn 0.3s ease; }
+    .tab-section.active { display: block; }
+
+    /* Cover Letter & Edit Mode Modals Core Structural CSS */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+        display: none; align-items: center; justify-content: center; z-index: 9999;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { display: flex; opacity: 1; }
+    
+    .modal-content {
+        background: white; width: 100%; max-width: 600px; 
+        border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        transform: translateY(20px); transition: transform 0.3s ease;
+        position: relative; overflow: hidden; display: flex; flex-direction: column;
+        margin: 20px; box-sizing: border-box; max-height: calc(100vh - 40px);
+    }
+    .modal-overlay.show .modal-content { transform: translateY(0); }
+
+    .modal-header { 
+        display: flex; justify-content: space-between; align-items: center; 
+        padding: 24px 30px; border-bottom: 1px solid #e2e8f0; 
+        background: #f8fafc; flex-shrink: 0;
+    }
+    .modal-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .btn-close { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; transition: 0.2s; padding: 0; line-height: 1; }
+    .btn-close:hover { color: #ef4444; }
+
+    .modal-body { 
+        color: #334155; font-size: 1rem; line-height: 1.7; 
+        font-family: inherit; padding: 30px; 
+        overflow-y: auto; flex-grow: 1; box-sizing: border-box;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media(max-width: 992px) {
+        .dashboard-main { padding: 30px; }
+    }
+
+    @media(max-width: 768px) {
+        .dashboard-wrapper { flex-direction: column; }
+        .mobile-toggle { display: flex; }
+        .dashboard-sidebar { position: fixed; top: 70px; left: -100%; height: calc(100vh - 70px); box-shadow: 5px 0 25px rgba(0,0,0,0.1); }
+        .dashboard-sidebar.show { left: 0; }
+        .dashboard-main { padding: 20px; }
+        .stats-row { grid-template-columns: 1fr 1fr; }
+        th, td { padding: 15px; }
+    }
+    @media(max-width: 480px) { .stats-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="sidebar">
+        <div class="sidebar-title">💼 Recruiter Panel</div>
+        <div class="sidebar-nav">
+            <div class="sidebar-item active" onclick="switchTab('overview')">
+                📊 Overview
+            </div>
+            <div class="sidebar-item" onclick="switchTab('jobs')">
+                📄 My Job Postings <span class="badge">{{ jobs.count|default:"0" }}</span>
+            </div>
+            <div class="sidebar-item" onclick="switchTab('applications')">
+                📥 Applications <span class="badge">{{ applications.count|default:"0" }}</span>
+            </div>
+            <a class="sidebar-item" href="{% url 'company_profile' %}" style="text-decoration:none;">
+                🏢 Company Profile
+            </a>
+            <div class="sidebar-action">
+                <a href="{% url 'add_job' %}" class="btn-primary">➕ Post New Job</a>
+            </div>
+            
+            <form method="post" action="{% url 'logout' %}" style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:10px;">
+                {% csrf_token %}
+                <button type="submit" class="sidebar-item" style="width:100%; text-align:left; background:none; border:none; color:#ef4444; font-family:inherit;">
+                    🚪 Log out
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('show')">
+            ☰ Menu
+        </button>
+
+        <!-- SECTION: OVERVIEW -->
+        <div id="tab-overview" class="tab-section active">
+            <h1 class="section-title">Welcome back, {{ user.first_name|default:user.username }}!</h1>
+
+            {% if not user.profile.is_verified %}
+            <div class="alert-warning">
+                <div>
+                    <strong>⚠️ Account Verification Pending</strong>
+                    <p>Your company profile is under review or missing OTP verification. Jobs will remain pending until verified.</p>
+                </div>
+                <button onclick="window.location.href='#'">Verify Now</button>
+            </div>
+            {% endif %}
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Total Jobs</div>
+                    <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending Review</div>
+                    <div class="stat-number">{{ stats.pending|default:"0" }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active / Approved</div>
+                    <div class="stat-number">{{ stats.approved|default:"0" }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Rejected</div>
+                    <div class="stat-number">{{ stats.rejected|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: JOBS LIST -->
+        <div id="tab-jobs" class="tab-section">
+            <h1 class="section-title">My Job Postings</h1>
+
+            <div class="data-card">
+                <div class="data-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Your Job Postings</span>
+                    <button type="submit" form="bulk-delete-form" class="btn-sm btn-delete" onclick="return confirm('Are you sure you want to delete all selected jobs?');">
+                        🗑️ Delete Selected
+                    </button>
+                </div>
+                {% if jobs %}
+                <div style="overflow-x:auto;">
+                    <form id="bulk-delete-form" method="post" action="{% url 'bulk_delete_jobs' %}">
+                        {% csrf_token %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+                                    <th>Job Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>ML Risk Score</th>
+                                    <th>Apps</th>
+                                    <th>Admin Note</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        {% for job in jobs %}
+                            <tr>
+                                <td><input type="checkbox" name="job_ids" value="{{ job.id }}" class="job-checkbox"></td>
+                                <td>
+                                    <span class="job-title">{{ job.title }}</span>
+                                    <span class="job-date">Posted on {{ job.created_at|date:"M d, Y" }}</span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                        <span class="tag-pill primary">{{ job.category|default:"General" }}</span>
+                                        <span class="tag-pill">{{ job.company_size|default:"Startup" }}</span>
+                                        <span class="tag-pill success">{{ job.work_mode|default:"Onsite" }}</span>
+                                        <span class="tag-pill">{{ job.experience_level|default:"Mid" }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if job.status == "pending" %}
+                                        <span class="status-badge pending">Pending</span>
+                                    {% elif job.status == "approved" %}
+                                        <span class="status-badge approved">Approved</span>
+                                    {% elif job.status == "rejected" %}
+                                        <span class="status-badge rejected">Rejected</span>
+                                    {% else %}
+                                        {{ job.status|title }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if job.scam_probability %}
+                                        {% if job.scam_probability > 0.6 %}
+                                            <span class="ml-tag ml-danger">🚨 High Risk ({{ job.scam_probability|floatformat:2 }})</span>
+                                        {% else %}
+                                            <span class="ml-tag ml-safe">✅ Passed ({{ job.scam_probability|floatformat:2 }})</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="ml-tag ml-pending">⏳ Analyzing...</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ job.jobapplication_set.count|default:"0" }}</strong></td>
+                                <td style="color: #64748b; font-size: 0.85rem;">{{ job.admin_note|default:"-" }}</td>
+                                <td>
+                                    <div style="display:flex; gap:4px;">
+                                        <button type="button" class="btn-sm btn-edit edit-job-btn"
+                                            data-id="{{ job.id }}"
+                                            data-title="{{ job.title|escapejs }}"
+                                            data-location="{{ job.location|escapejs }}"
+                                            data-jobtype="{{ job.job_type|escapejs }}"
+                                            data-category="{{ job.category|escapejs }}"
+                                            data-company="{{ job.company_size|escapejs }}"
+                                            data-workmode="{{ job.work_mode|escapejs }}"
+                                            data-experience="{{ job.experience_level|escapejs }}"
+                                            data-salary="{{ job.salary_range|escapejs }}"
+                                            data-desc="{% filter force_escape %}{{ job.description }}{% endfilter %}"
+                                            data-url="{% url 'edit_job' job.id %}">
+                                            ✏️ Edit
+                                        </button>
+                                        <button type="submit" formaction="{% url 'delete_job' job.id %}" class="btn-sm btn-delete" onclick="return confirm('Are you sure you want to delete this specific job?');">🗑️ Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    </form>
+                </div>
+                {% else %}
+                    <div class="empty-msg">
+                        <h3>No jobs posted yet!</h3>
+                        <p>🚀 Click "Post New Job" to create your first listing and start finding great candidates.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SECTION: APPLICATIONS -->
+        <div id="tab-applications" class="tab-section">
+            <h1 class="section-title">Received Applications</h1>
+
+            <div class="data-card">
+                <div class="data-card-header">All Candidates</div>
+                {% if applications %}
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Applicant Name</th>
+                                <th>Email Contact</th>
+                                <th>Applied For</th>
+                                <th>Date</th>
+                                <th>Documents</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for app in applications %}
+                            <tr>
+                                <td>
+                                    <strong class="job-title">{{ app.full_name }}</strong>
+                                </td>
+                                <td><a href="mailto:{{ app.email }}" style="color:#2563eb; text-decoration:none; font-weight:500;">{{ app.email }}</a></td>
+                                <td>
+                                    <a href="{% url 'job_detail' app.job.id %}" style="color:#64748b; font-size:0.9rem; text-decoration:none; display:flex; align-items:center; gap:6px;">
+                                        📋 {{ app.job.title|truncatechars:25 }}
+                                    </a>
+                                </td>
+                                <td class="job-date">{{ app.applied_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div style="display:flex; gap:8px;">
+                                        {% if app.resume %}
+                                        <a href="{{ app.resume.url }}" target="_blank" class="action-btn btn-resume">
+                                            📄 View Resume
+                                        </a>
+                                        {% else %}
+                                        <span class="action-btn btn-disabled">No Resume</span>
+                                        {% endif %}
+                                        
+                                        {% if app.cover_letter %}
+                                        <button class="action-btn btn-cover cover-letter-btn" 
+                                                data-name="{{ app.full_name|escapejs }}" 
+                                                data-cover="{% filter force_escape %}{{ app.cover_letter }}{% endfilter %}">
+                                            📝 Read Cover Letter
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <div class="empty-msg">
+                        <h3>No applications yet</h3>
+                        <p>When candidates apply for your active jobs, their applications will appear here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Cover Letter Modal -->
+<div class="modal-overlay" id="coverLetterModal" onclick="if(event.target === this) closeModal('coverLetterModal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">📝 Cover Letter</div>
+            <button class="btn-close" onclick="closeModal('coverLetterModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="font-weight:700; color:#2563eb; margin-bottom:15px; font-size:0.9rem;">From: <span id="modalApplicantName" style="color:#0f172a;"></span></div>
+            <div id="modalCoverLetterText"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Job Modal -->
+<div class="modal-overlay" id="editJobModal" onclick="if(event.target === this) closeModal('editJobModal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">✏️ Edit Job Posting</div>
+            <button class="btn-close" onclick="closeModal('editJobModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editJobForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Job Title</label>
+                    <input type="text" name="title" id="editJobTitle" required style="width:100%; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Category</label>
+                        <select name="category" id="editJobCategory" style="width:100%; box-sizing:border-box; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s; background:white;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                            <option value="Engineering">Engineering</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="HR">HR</option>
+                            <option value="Product">Product</option>
+                            <option value="Data Science">Data Science</option>
+                            <option value="Analytics">Analytics</option>
+                            <option value="Design">Design</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Operations">Operations</option>
+                            <option value="General">General / Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Company Type</label>
+                        <select name="company_size" id="editJobCompany" style="width:100%; box-sizing:border-box; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s; background:white;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                            <option value="Startup">Startup</option>
+                            <option value="MNC">MNC</option>
+                            <option value="Fortune 500">Fortune 500</option>
+                            <option value="SME">SME / Mid-size</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Work Mode</label>
+                        <select name="work_mode" id="editJobWorkMode" style="width:100%; box-sizing:border-box; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s; background:white;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                            <option value="Remote">Remote</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Onsite">Onsite</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Experience Level</label>
+                        <select name="experience_level" id="editJobExperience" style="width:100%; box-sizing:border-box; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s; background:white;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                            <option value="Internship">Internship</option>
+                            <option value="Fresher">Fresher</option>
+                            <option value="Entry">Entry Level</option>
+                            <option value="Mid">Mid Level</option>
+                            <option value="Senior">Senior</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Location</label>
+                        <input type="text" name="location" id="editJobLocation" placeholder="e.g. Remote" style="width:100%; box-sizing:border-box; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Job Type</label>
+                        <select name="job_type" id="editJobType" style="width:100%; box-sizing:border-box; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s; background:white;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Freelance">Freelance</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Salary Range</label>
+                    <input type="text" name="salary_range" id="editJobSalary" placeholder="e.g. $80k - $100k" style="width:100%; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; outline:none; transition:0.2s;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Job Description</label>
+                    <textarea name="description" id="editJobDesc" rows="6" required style="width:100%; padding:12px 15px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:1rem; resize:vertical; outline:none; transition:0.2s;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <label style="display:block; font-size: 0.95rem; font-weight:700; margin-bottom:8px; color:#1e293b;">Update Job PDF <span style="font-weight:400; color:#64748b; font-size:0.85rem;">(Optional)</span></label>
+                    <input type="file" name="pdf" accept=".pdf" style="width:100%; padding:10px 15px; border:1px dashed #cbd5e1; border-radius:8px; background:#f8fafc; font-size:0.9rem; cursor:pointer;">
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; padding:15px; font-size:1.05rem;">💾 Save Changes</button>
+                <div style="margin-top: 20px; font-size: 0.85rem; color: #9a3412; background: #fff7ed; padding: 12px 16px; border-radius: 8px; border-left: 4px solid #ea580c; line-height: 1.5;">
+                    <strong>Note:</strong> Editing a job will require it to undergo our automated ML scan and Admin Review again before becoming active on the public job board.
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all sections
+        document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+        // Show target section
+        const targetTab = document.getElementById('tab-' + tabId);
+        if (targetTab) {
+            targetTab.classList.add('active');
+        }
+        
+        // Update sidebar active state
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        // Find the correct sidebar item
+        document.querySelectorAll('.sidebar-item').forEach(el => {
+            const onclickAttr = el.getAttribute('onclick');
+            if (onclickAttr && onclickAttr.includes(tabId)) {
+                el.classList.add('active');
+            }
+        });
+
+        // Update URL without reloading
+        history.replaceState(null, null, '#' + tabId);
+
+        // Close mobile sidebar if open
+        if(window.innerWidth <= 768) {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.remove('show');
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Check hash and switch tab if present
+        if(window.location.hash) {
+            const tabId = window.location.hash.substring(1); 
+            if(document.getElementById('tab-' + tabId)) {
+                switchTab(tabId);
+            }
+        }
+
+        const coverBtns = document.querySelectorAll(".cover-letter-btn");
+        coverBtns.forEach(btn => {
+            btn.addEventListener("click", function() {
+                const name = this.getAttribute("data-name");
+                const cover = this.getAttribute("data-cover");
+                openCoverLetterModal(name, cover);
+            });
+        });
+
+        // Select All Checkbox Logic
+        const selectAllBtn = document.getElementById('selectAll');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.job-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = selectAllBtn.checked;
+                });
+            });
+        }
+
+        // Edit Job Modal Logic
+        const editBtns = document.querySelectorAll(".edit-job-btn");
+        editBtns.forEach(btn => {
+            btn.addEventListener("click", function() {
+                const title = this.getAttribute("data-title");
+                const loc = this.getAttribute("data-location");
+                const type = this.getAttribute("data-jobtype");
+                const category = this.getAttribute("data-category");
+                const company = this.getAttribute("data-company");
+                const workmode = this.getAttribute("data-workmode");
+                const experience = this.getAttribute("data-experience");
+                const sal = this.getAttribute("data-salary");
+                const desc = this.getAttribute("data-desc");
+                const url = this.getAttribute("data-url");
+                
+                document.getElementById('editJobTitle').value = title;
+                document.getElementById('editJobLocation').value = loc;
+                document.getElementById('editJobType').value = type || 'Full-time';
+                document.getElementById('editJobCategory').value = category || 'General';
+                document.getElementById('editJobCompany').value = company || 'Startup';
+                document.getElementById('editJobWorkMode').value = workmode || 'Onsite';
+                document.getElementById('editJobExperience').value = experience || 'Mid';
+                document.getElementById('editJobSalary').value = sal;
+                document.getElementById('editJobDesc').value = desc;
+                document.getElementById('editJobForm').action = url;
+                
+                document.getElementById('editJobModal').classList.add('show');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+    });
+
+    function openCoverLetterModal(applicantName, coverLetterText) {
+        document.getElementById('modalApplicantName').textContent = applicantName;
+        document.getElementById('modalCoverLetterText').textContent = coverLetterText;
+        document.getElementById('coverLetterModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('show');
+        document.body.style.overflow = '';
+    }
+</script>
+{% endblock %}

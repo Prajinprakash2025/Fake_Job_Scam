@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Company Profile | SafeCareer{% endblock %}
+
+{% block extra_css %}
+<style>
+.wrap { max-width: 760px; margin: 30px auto; padding: 0 16px; }
+.card { background: #fff; border:1px solid #e2e8f0; border-radius: 18px; box-shadow:0 14px 30px rgba(15,23,42,0.08); padding:24px; }
+.card h2 { margin:0 0 8px; font-size:1.5rem; font-weight:800; }
+label { font-weight:700; display:block; margin-bottom:6px; color:#0f172a; }
+input, textarea { width:100%; padding:12px; border-radius:12px; border:1px solid #cbd5e1; font-family:inherit; font-size:0.95rem; }
+textarea { min-height:120px; resize:vertical; }
+.row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.btn { margin-top:12px; width:100%; padding:14px; border:none; border-radius:12px; background:#2563eb; color:white; font-weight:800; cursor:pointer; }
+.hint { color:#64748b; font-size:0.9rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+    <div class="card">
+        <h2>Company Profile</h2>
+        <p class="hint">Keep this updated so candidates see a complete brand card in search.</p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div>
+                    <label for="{{ form.company_name.id_for_label }}">Company name</label>
+                    {{ form.company_name }}
+                </div>
+                <div>
+                    <label for="{{ form.company_website.id_for_label }}">Website</label>
+                    {{ form.company_website }}
+                </div>
+            </div>
+            <div style="margin-top:12px;">
+                <label for="{{ form.company_description.id_for_label }}">Description</label>
+                {{ form.company_description }}
+            </div>
+            <div style="margin-top:12px;">
+                <label for="{{ form.company_logo.id_for_label }}">Logo</label>
+                {{ form.company_logo }}
+            </div>
+            <button type="submit" class="btn">Save company</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

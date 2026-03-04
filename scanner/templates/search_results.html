@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Search Jobs | SafeCareer{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-hero {
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    color: white;
+    padding: 50px 18px 26px;
+}
+.search-inner { max-width: 1100px; margin: 0 auto; }
+.search-form {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 0.8fr auto;
+    gap: 10px;
+    margin-top: 16px;
+}
+.search-form input, .search-form select {
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 0.95rem;
+}
+.search-form button {
+    border: none;
+    border-radius: 12px;
+    background: #0f172a;
+    color: white;
+    font-weight: 800;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+.results { max-width: 1100px; margin: 24px auto 50px; padding: 0 16px; display: grid; gap: 18px; }
+.result-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px;
+    box-shadow: 0 12px 30px rgba(15,23,42,0.05);
+    display: grid; gap: 10px;
+}
+.job-head { display:flex; justify-content: space-between; align-items: center; gap: 10px; }
+.job-title { font-weight: 800; color: #0f172a; text-decoration:none; }
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+.chip { padding:6px 10px; border-radius:999px; background:#eef2ff; color:#1e3a8a; font-weight:700; font-size:0.85rem; }
+.muted { color:#64748b; font-size:0.9rem; }
+.company-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
+.company-card { border:1px solid #e2e8f0; border-radius:14px; padding:12px; background:white; box-shadow:0 8px 18px rgba(15,23,42,0.04); }
+.company-name { font-weight:800; color:#0f172a; }
+.section-title { display:flex; justify-content:space-between; align-items:center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-hero">
+    <div class="search-inner">
+        <p style="margin:0; opacity:0.85;">Smart filters</p>
+        <h1 style="margin:4px 0 10px; font-weight:800;">Search verified jobs & companies</h1>
+        <form class="search-form" method="get" action="{% url 'search_jobs' %}">
+            <input type="text" name="q" value="{{ query }}" placeholder="Role, skill, or keyword">
+            <input type="text" name="location" value="{{ location_query }}" placeholder="Location">
+            <select name="category">
+                <option value="">All categories</option>
+                {% for cat, label in categories %}
+                    <option value="{{ cat }}" {% if category_query == cat %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="work_mode">
+                <option value="">Any mode</option>
+                <option value="Remote" {% if work_mode_query == "Remote" %}selected{% endif %}>Remote</option>
+                <option value="Hybrid" {% if work_mode_query == "Hybrid" %}selected{% endif %}>Hybrid</option>
+                <option value="Onsite" {% if work_mode_query == "Onsite" %}selected{% endif %}>Onsite</option>
+            </select>
+            <button type="submit">Search</button>
+        </form>
+        <p style="margin-top:10px;">{{ stats.count }} jobs • {{ stats.companies }} companies</p>
+    </div>
+</div>
+
+<div class="results">
+    <div class="section-title">
+        <h2 style="margin:0;">Job results</h2>
+        <span class="muted">{{ stats.count }} matches</span>
+    </div>
+    {% if jobs %}
+        {% for job in jobs %}
+            <article class="result-card">
+                <div class="job-head">
+                    <a class="job-title" href="{% url 'job_detail' job.id %}">{{ job.title }}</a>
+                    <span class="chip">{{ job.work_mode }}</span>
+                </div>
+                <div class="muted">{{ job.recruiter.recruiterprofile.company_name|default:job.recruiter.username }} • {{ job.location|default:"Remote" }} • {{ job.created_at|timesince }} ago</div>
+                <div class="chips">
+                    <span class="chip">{{ job.category }}</span>
+                    <span class="chip">{{ job.company_size }}</span>
+                    <span class="chip">{{ job.experience_level }}</span>
+                    <span class="chip">{{ job.job_type }}</span>
+                </div>
+            </article>
+        {% endfor %}
+    {% else %}
+        <div class="result-card muted">No jobs matched this search.</div>
+    {% endif %}
+
+    <div class="section-title">
+        <h2 style="margin:0;">Companies</h2>
+        <span class="muted">{{ stats.companies }} matches</span>
+    </div>
+    {% if companies %}
+        <div class="company-grid">
+            {% for company in companies %}
+                <div class="company-card">
+                    <div class="company-name">{{ company.company_name }}</div>
+                    <div class="muted">{{ company.company_website|default:"Website not added" }}</div>
+                    <p class="muted" style="margin-top:6px;">{{ company.company_description|truncatechars:120|default:"No description yet." }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="result-card muted">No verified companies matched.</div>
+    {% endif %}
+</div>
+{% endblock %}

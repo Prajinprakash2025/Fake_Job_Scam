@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Registration | SafeCareer</title>
+    <style>
+        :root {
+            --primary-dark: #0f172a; 
+            --primary-blue: #2563eb; 
+            --blue-hover: #1d4ed8;
+            --bg-light: #f1f5f9;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --danger-red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            background-color: var(--bg-light); color: var(--text-main);
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        /* --- REGISTRATION CONTAINER --- */
+        .auth-container {
+            display: flex; background: white; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05); overflow: hidden;
+            max-width: 900px; width: 100%;
+        }
+
+        .auth-banner {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1e293b 100%);
+            color: white; padding: 50px 40px; flex: 1; display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .auth-banner h2 { font-size: 2.2rem; margin-bottom: 20px; font-weight: 800; }
+        .auth-banner p { color: #cbd5e1; font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6; }
+        
+        .trust-list { list-style: none; }
+        .trust-list li { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: #f8fafc; }
+
+        .auth-form-wrapper { padding: 50px 40px; flex: 1; background: white; }
+        .auth-form-wrapper h3 { font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 5px; }
+        .auth-form-wrapper > p { color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--primary-dark); }
+        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; transition: 0.2s;}
+        .form-group input:focus { outline: none; border-color: var(--primary-blue); background: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        .btn-submit {
+            width: 100%; background: var(--primary-blue); color: white; border: none;
+            padding: 14px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-submit:hover { background: var(--blue-hover); }
+
+        .auth-links { text-align: center; margin-top: 20px; font-size: 0.9rem; }
+        .auth-links a { color: var(--primary-blue); text-decoration: none; font-weight: 600; }
+        .auth-links a:hover { text-decoration: underline; }
+
+        /* --- OTP MODAL STYLES --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px);
+            z-index: 1000; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+
+        .modal-card {
+            background: white; max-width: 420px; width: 90%;
+            border-radius: 20px; padding: 40px 30px; text-align: center;
+            transform: translateY(20px); transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            position: relative; /* Needed for the close button */
+        }
+        .modal-overlay.show .modal-card { transform: translateY(0); }
+
+        /* Close Button Styles */
+        .close-btn {
+            position: absolute; top: 15px; right: 20px; font-size: 28px;
+            color: #94a3b8; cursor: pointer; transition: 0.2s; line-height: 1;
+        }
+        .close-btn:hover { color: var(--danger-red); }
+
+        .modal-icon {
+            background: #eff6ff; color: var(--primary-blue); width: 70px; height: 70px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 30px; margin: 0 auto 20px auto;
+        }
+
+        .otp-input {
+            width: 100%; padding: 15px; border: 2px solid #cbd5e1; border-radius: 10px;
+            font-size: 1.5rem; letter-spacing: 0.5em; text-align: center; font-weight: bold; margin-bottom: 25px;
+            background: #f8fafc; color: var(--primary-dark);
+        }
+        .otp-input:focus { outline: none; border-color: var(--primary-blue); background: white; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .otp-input::placeholder { letter-spacing: normal; font-size: 1rem; font-weight: normal; color: #94a3b8; }
+
+        /* Resend Link Styles */
+        .resend-link { margin-top: 20px; font-size: 0.9rem; color: var(--text-muted); }
+        .resend-link a { color: var(--primary-blue); text-decoration: none; font-weight: 600; cursor: pointer; }
+        .resend-link a:hover { text-decoration: underline; }
+
+        @media(max-width: 768px) {
+            .auth-container { flex-direction: column; }
+            .auth-banner { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        
+        <div class="auth-banner">
+            <h2>Hire with Confidence.</h2>
+            <p>Join SafeCareer's verified network to post jobs, manage applications, and prove your authenticity to top talent.</p>
+            <ul class="trust-list">
+                <li>✓ Get a Verified Recruiter Badge</li>
+                <li>🤖 AI-Powered Job Processing</li>
+                <li>🛡️ Protect Your Brand Reputation</li>
+            </ul>
+        </div>
+
+        <div class="auth-form-wrapper">
+            <h3>Create an Account</h3>
+            <p>Enter your details to register as a recruiter.</p>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="company_name">Company Name</label>
+                    <input type="text" id="company_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Work Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm">Confirm Password</label>
+                    <input type="password" id="confirm" required>
+                </div>
+                <button type="submit" class="btn-submit">Register & Get OTP</button>
+            </form>
+
+            <div class="auth-links">
+                Already have an account? <a href="{% url 'recruiter_login' %}">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="otpModal">
+        <div class="modal-card">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+
+            <div class="modal-icon">✉️</div>
+            <h2 style="color: var(--primary-dark); margin-bottom: 10px;">Verify Your Email</h2>
+            <p style="color: #64748b; margin-bottom: 25px; font-size: 0.95rem;">We've sent a 6-digit OTP to your email address.</p>
+
+            <form id="otpForm">
+                <input type="text" id="otpCode" class="otp-input" placeholder="Enter OTP" maxlength="6" required autocomplete="off">
+                <button type="submit" class="btn-submit">Verify Account</button>
+            </form>
+
+            <div class="resend-link">
+                Didn't receive the code? <a id="resendOtpBtn">Resend OTP</a>
+            </div>
+        </div>
+    </div>
+
+<script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        const registerForm = document.getElementById('registerForm');
+        const otpForm = document.getElementById('otpForm');
+        const otpModal = document.getElementById('otpModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+
+        // Close Modal Functionality
+        closeModalBtn.addEventListener('click', function() {
+            otpModal.classList.remove('show');
+        });
+
+        // 1. Submit Registration Data
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            
+            const company_name = document.getElementById('company_name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm').value;
+            const submitBtn = registerForm.querySelector('.btn-submit');
+            
+            submitBtn.innerText = "Creating Account...";
+            submitBtn.disabled = true;
+
+            fetch("{% url 'recruiter_signup' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ company_name: company_name, email: email, password: password, confirm: confirm })
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.innerText = "Register & Get OTP";
+                submitBtn.disabled = false;
+
+                if (data.status === "success") {
+                    otpModal.classList.add('show');
+                    document.getElementById('otpCode').focus();
+                } else {
+                    alert("Registration Failed: " + data.message);
+                }
+            })
+            .catch(error => { console.error('Error:', error); submitBtn.disabled = false; });
+        });
+
+        // 2. Submit OTP Code
+        otpForm.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+
+            const otpCode = document.getElementById('otpCode').value;
+            const submitBtn = otpForm.querySelector('.btn-submit');
+
+            submitBtn.innerText = "Verifying...";
+            submitBtn.disabled = true;
+
+            fetch("{% url 'recruiter_verify' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ otp: otpCode })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "verified") {
+                    window.location.href = "{% url 'home' %}"; 
+                } else {
+                    alert("Verification Failed: " + data.message);
+                    submitBtn.innerText = "Verify Account";
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => { 
+                console.error('Error:', error); 
+                submitBtn.innerText = "Verify Account";
+                submitBtn.disabled = false; 
+            });
+        });
+
+        // 3. Resend OTP Functionality
+        resendOtpBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            resendOtpBtn.innerText = "Sending...";
+            resendOtpBtn.style.pointerEvents = "none";
+
+            const company_name = document.getElementById('company_name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm').value;
+
+            // Re-trigger the signup fetch to send a new OTP
+            fetch("{% url 'recruiter_signup' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ company_name: company_name, email: email, password: password, confirm: confirm })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert("A new OTP has been sent to your email.");
+                    document.getElementById('otpCode').value = ''; // Clear old OTP input
+                } else {
+                    alert("Failed to resend: " + data.message);
+                }
+                resendOtpBtn.innerText = "Resend OTP";
+                resendOtpBtn.style.pointerEvents = "auto";
+            })
+            .catch(error => { 
+                console.error('Error:', error); 
+                resendOtpBtn.innerText = "Resend OTP";
+                resendOtpBtn.style.pointerEvents = "auto";
+            });
+        });
+</script>
+</body>
+</html>

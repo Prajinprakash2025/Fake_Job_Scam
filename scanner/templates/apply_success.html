@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Application Submitted | SafeCareer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 160px);
+        padding: 40px 20px;
+    }
+
+    .success-card {
+        max-width: 550px;
+        width: 100%;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+        padding: 50px 40px;
+        text-align: center;
+    }
+
+    .success-icon {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: #dcfce7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+        margin: 0 auto 25px;
+    }
+
+    .success-card h1 {
+        font-size: 1.8rem;
+        color: #0f172a;
+        margin-bottom: 10px;
+    }
+
+    .success-card p {
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+
+    .job-tag {
+        display: inline-block;
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        font-size: 0.95rem;
+    }
+
+    .success-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .success-actions a {
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: 0.2s;
+    }
+
+    .btn-home {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-home:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+    }
+
+    .btn-scan {
+        background: transparent;
+        color: #2563eb;
+        border: 2px solid #2563eb;
+    }
+
+    .btn-scan:hover { background: #eff6ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-wrapper">
+    <div class="success-card">
+        <div class="success-icon">✅</div>
+        <h1>Application Submitted!</h1>
+        <div class="job-tag">📋 {{ job.title }}</div>
+        <p>Your application has been sent to the recruiter. They will review your profile and get back to you via email.</p>
+        <div class="success-actions">
+            <a href="{% url 'home' %}" class="btn-home">Browse More Jobs</a>
+            <a href="{% url 'scan_job' %}" class="btn-scan">Scan a Job</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

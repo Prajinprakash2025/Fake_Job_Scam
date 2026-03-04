@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Login | SafeCareer</title>
+    <style>
+        :root {
+            --primary-dark: #0f172a; 
+            --primary-blue: #2563eb; 
+            --blue-hover: #1d4ed8;
+            --bg-light: #f1f5f9;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --danger-red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* --- SPLIT SCREEN LOGIN CONTAINER --- */
+        .auth-container {
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* Left Side - Branding */
+        .auth-banner {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1e293b 100%);
+            color: white;
+            padding: 50px 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 28px; font-weight: 800; color: white;
+            text-decoration: none; display: flex; align-items: center; gap: 8px;
+            position: absolute; top: 40px; left: 40px;
+        }
+        .logo span { color: #60a5fa; }
+
+        .auth-banner-content { margin-top: 60px; }
+        .auth-banner h2 { font-size: 2.2rem; margin-bottom: 15px; font-weight: 800; line-height: 1.2;}
+        .auth-banner p { color: #cbd5e1; font-size: 1.05rem; margin-bottom: 30px; line-height: 1.6; }
+
+        .trust-badges {
+            display: flex; gap: 15px; margin-top: 20px;
+        }
+        .badge {
+            background: rgba(255,255,255,0.1); padding: 8px 12px;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Right Side - Form */
+        .auth-form-wrapper {
+            padding: 60px 50px;
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-form-wrapper h3 { font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 8px; }
+        .auth-form-wrapper > p { color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; }
+
+        .error-msg {
+            background-color: #fee2e2; color: var(--danger-red);
+            padding: 12px 15px; border-radius: 8px; margin-bottom: 20px;
+            font-size: 0.9rem; font-weight: 600; border-left: 4px solid var(--danger-red);
+        }
+
+        .form-group { margin-bottom: 22px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--primary-dark); }
+        .form-group input {
+            width: 100%; padding: 14px 16px; border: 1.5px solid #cbd5e1;
+            border-radius: 10px; font-size: 1rem; transition: 0.2s;
+            background: #f8fafc;
+        }
+        .form-group input:focus {
+            outline: none; border-color: var(--primary-blue); background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .forgot-link { display: block; text-align: right; margin-top: -10px; margin-bottom: 25px; font-size: 0.85rem; color: var(--primary-blue); text-decoration: none; font-weight: 600; }
+        .forgot-link:hover { text-decoration: underline; }
+
+        .btn-submit {
+            width: 100%; background: var(--primary-blue); color: white; border: none;
+            padding: 15px; font-size: 1.05rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-submit:hover { background: var(--blue-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+
+        .auth-links { text-align: center; margin-top: 25px; font-size: 0.9rem; color: var(--text-muted); }
+        .auth-links a { color: var(--primary-blue); text-decoration: none; font-weight: 600; }
+        .auth-links a:hover { text-decoration: underline; }
+
+        @media(max-width: 768px) {
+            .auth-container { flex-direction: column; }
+            .auth-banner { padding: 40px 25px; display: none; }
+            .auth-form-wrapper { padding: 40px 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        
+        <div class="auth-banner">
+            <a href="{% url 'home' %}" class="logo">🛡️ Safe<span>Career</span></a>
+            
+            <div class="auth-banner-content">
+                <h2>Welcome back to the secure network.</h2>
+                <p>Access your dashboard to post verified jobs, manage applicant trust scores, and build your company's reputation.</p>
+                
+                <div class="trust-badges">
+                    <span class="badge">🔒 Encrypted Login</span>
+                    <span class="badge">🤖 ML Protected</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-form-wrapper">
+            <h3>Recruiter Login</h3>
+            <p>Enter your credentials to access your dashboard.</p>
+
+            {% if error %}
+            <div class="error-msg">
+                ⚠️ {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'recruiter_login' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="email">Work Email</label>
+                    <input type="email" id="email" name="email" required placeholder="hr@company.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+
+                <a href="#" class="forgot-link">Forgot Password?</a>
+
+                <button type="submit" class="btn-submit">Sign In to Dashboard</button>
+            </form>
+
+            <div class="auth-links">
+                Don't have an account? <a href="{% url 'recruiter_signup' %}">Register as a Recruiter</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

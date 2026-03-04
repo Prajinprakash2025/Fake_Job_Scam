@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | SafeCareer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-select-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 160px);
+        padding: 50px 20px;
+    }
+
+    .login-select-container {
+        max-width: 950px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .login-select-header h1 {
+        font-size: 2.5rem;
+        color: #0f172a;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .login-select-header h1 span {
+        color: #2563eb;
+    }
+
+    .login-select-header p {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin-bottom: 50px;
+    }
+
+    .role-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+
+    .role-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px 30px 35px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.04);
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .role-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(37, 99, 235, 0.12);
+        border-color: #2563eb;
+    }
+
+    .role-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .role-card.user-card::before { background: #2563eb; }
+    .role-card.recruiter-card::before { background: #22c55e; }
+    .role-card.admin-card::before { background: #f59e0b; }
+
+    .role-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        margin: 0 auto 20px;
+    }
+
+    .user-card .role-icon { background: #eff6ff; }
+    .recruiter-card .role-icon { background: #f0fdf4; }
+    .admin-card .role-icon { background: #fffbeb; }
+
+    .role-card h3 {
+        font-size: 1.3rem;
+        color: #0f172a;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .role-card p {
+        color: #64748b;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+
+    .role-btn {
+        display: inline-block;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        transition: 0.2s;
+        text-decoration: none;
+    }
+
+    .user-card .role-btn {
+        background: #2563eb;
+        color: white;
+    }
+
+    .user-card:hover .role-btn {
+        background: #1d4ed8;
+        box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .recruiter-card .role-btn {
+        background: #22c55e;
+        color: white;
+    }
+
+    .recruiter-card:hover .role-btn {
+        background: #16a34a;
+        box-shadow: 0 6px 15px rgba(34, 197, 94, 0.3);
+    }
+
+    .admin-card .role-btn {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .admin-card:hover .role-btn {
+        background: #d97706;
+        box-shadow: 0 6px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .signup-note {
+        margin-top: 40px;
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .signup-note a {
+        color: #2563eb;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .signup-note a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+        .role-grid {
+            grid-template-columns: 1fr;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .login-select-header h1 { font-size: 1.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-select-wrapper">
+    <div class="login-select-container">
+
+        <div class="login-select-header">
+            <h1>Welcome to <span>SafeCareer</span></h1>
+            <p>Choose your role to continue to the appropriate login portal.</p>
+        </div>
+
+        <div class="role-grid">
+
+            <!-- JOB SEEKER / USER -->
+            <a href="{% url 'user_login' %}" class="role-card user-card">
+                <div class="role-icon">👤</div>
+                <h3>Job Seeker</h3>
+                <p>Scan job postings for scam risk using our AI-powered detector. Paste text, upload PDFs, or check URLs.</p>
+                <span class="role-btn">Login as User →</span>
+            </a>
+
+            <!-- RECRUITER -->
+            <a href="{% url 'recruiter_login' %}" class="role-card recruiter-card">
+                <div class="role-icon">💼</div>
+                <h3>Recruiter</h3>
+                <p>Post verified job listings, manage applications, and build your company's trusted reputation.</p>
+                <span class="role-btn">Login as Recruiter →</span>
+            </a>
+
+            <!-- ADMIN -->
+            <a href="{% url 'admin_login' %}" class="role-card admin-card">
+                <div class="role-icon">🛡️</div>
+                <h3>Administrator</h3>
+                <p>Review pending jobs, moderate recruiter accounts, and manage the system's scam detection settings.</p>
+                <span class="role-btn">Login as Admin →</span>
+            </a>
+
+        </div>
+
+        <div class="signup-note">
+            New job seeker? <a href="{% url 'user_signup' %}">Create a free account</a> &nbsp;|&nbsp;
+            New recruiter? <a href="{% url 'recruiter_signup' %}">Register your company</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

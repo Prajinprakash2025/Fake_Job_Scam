@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Job | SafeCareer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    --ink: #0f172a;
+    --ocean: #2563eb;
+    --sky: #38bdf8;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #f5f7fb;
+}
+
+body {
+    margin: 0;
+    padding: 42px 16px 60px;
+    background: radial-gradient(circle at 20% 20%, rgba(56,189,248,0.15), transparent 35%), var(--bg);
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    color: var(--ink);
+}
+
+.page {
+    max-width: 880px;
+    margin: 0 auto;
+}
+
+.card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 30px;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(15,23,42,0.08);
+}
+
+.back-link {
+    text-decoration: none;
+    color: var(--ocean);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+h2 { margin: 12px 0 6px; font-size: 1.6rem; font-weight: 800; }
+.lede { margin: 0 0 18px; color: var(--muted); }
+
+form { margin-top: 10px; }
+label { display: block; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+input, select, textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    background: #fff;
+}
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--ocean);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+textarea { resize: vertical; min-height: 140px; }
+
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.stack { margin-bottom: 16px; }
+
+.pill-note {
+    background: #eef2ff;
+    border: 1px dashed #c7d2fe;
+    color: #4338ca;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    color: #fff;
+    font-weight: 800;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 16px 32px rgba(37,99,235,0.25);
+    transition: transform 0.15s ease;
+}
+.btn-primary:hover { transform: translateY(-2px); }
+
+.helper {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    color: #92400e;
+    padding: 12px;
+    border-radius: 12px;
+    margin-top: 18px;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+    .card { padding: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+    <div class="card">
+        <a class="back-link" href="{% url 'recruiter_dashboard' %}">← Back to dashboard</a>
+        <h2>Post a new role</h2>
+        <p class="lede">Capture the category, work mode, and experience level so it appears in the new home page rails.</p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="stack">
+                <label for="{{ form.title.id_for_label }}">Job title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="grid-2 stack">
+                <div>
+                    <label for="{{ form.category.id_for_label }}">Category</label>
+                    {{ form.category }}
+                </div>
+                <div>
+                    <label for="{{ form.company_size.id_for_label }}">Company type</label>
+                    {{ form.company_size }}
+                </div>
+            </div>
+
+            <div class="grid-2 stack">
+                <div>
+                    <label for="{{ form.work_mode.id_for_label }}">Work mode</label>
+                    {{ form.work_mode }}
+                </div>
+                <div>
+                    <label for="{{ form.experience_level.id_for_label }}">Experience level</label>
+                    {{ form.experience_level }}
+                </div>
+            </div>
+
+            <div class="grid-2 stack">
+                <div>
+                    <label for="{{ form.location.id_for_label }}">Location</label>
+                    {{ form.location }}
+                </div>
+                <div>
+                    <label for="{{ form.job_type.id_for_label }}">Job type</label>
+                    {{ form.job_type }}
+                </div>
+            </div>
+
+            <div class="stack">
+                <label for="{{ form.salary_range.id_for_label }}">Salary range</label>
+                {{ form.salary_range }}
+            </div>
+
+            <div class="stack">
+                <label for="{{ form.description.id_for_label }}">Job description</label>
+                {{ form.description }}
+            </div>
+
+            <div class="stack">
+                <label for="{{ form.job_url.id_for_label }}">External job URL (optional)</label>
+                {{ form.job_url }}
+            </div>
+
+            <div class="stack">
+                <label for="{{ form.pdf.id_for_label }}">Upload PDF (optional)</label>
+                <div class="pill-note">We will auto-scan the PDF for scam signals.</div>
+                {{ form.pdf }}
+            </div>
+
+            <button type="submit" class="btn-primary">Submit for review</button>
+            <div class="helper">
+                Editing or creating a job sends it for admin review and ML scan before it goes live on the homepage categories.
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
