@@ -37,7 +37,9 @@ venv.bak/
 
 # Django
 *.log
-/media/
+/media/*
+!/media/company_logos
+!/media/company_logos/**
 /static/
 
 # Environment variables
