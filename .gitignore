@@ -36,7 +36,6 @@ venv.bak/
 .DS_Store
 
 # Django
-db.sqlite3
 *.log
 /media/
 /static/
