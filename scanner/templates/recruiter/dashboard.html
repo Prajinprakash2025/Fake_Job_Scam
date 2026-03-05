@@ -270,6 +270,33 @@
     .empty-msg { padding: 50px 20px; text-align: center; color: #64748b; font-size: 1rem; }
     .empty-msg h3 { color: #0f172a; margin-bottom: 10px; }
 
+    /* Company Profile */
+    .company-card { background:white; border-radius:18px; border:1px solid #e2e8f0; box-shadow:0 12px 35px rgba(15,23,42,0.06); padding:20px; }
+    .company-card-header { display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center; }
+    .company-logo { width:72px; height:72px; border-radius:16px; background:#f1f5f9; display:grid; place-items:center; font-weight:800; color:#0f172a; overflow:hidden; }
+    .company-name { font-size:1.4rem; font-weight:800; color:#0f172a; }
+    .company-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:6px; }
+    .link-pill { padding:6px 10px; border-radius:10px; background:#eef2ff; color:#312e81; font-weight:700; text-decoration:none; border:1px solid #c7d2fe; }
+    .link-pill.muted { background:#f8fafc; color:#94a3b8; border-color:#e2e8f0; }
+    .btn-outline { padding:10px 14px; border-radius:10px; border:1px solid #2563eb; color:#2563eb; background: #eef2ff; font-weight:700; cursor:pointer; transition:0.2s; }
+    .btn-outline:hover { background:#2563eb; color:white; }
+    .company-body { padding:16px 6px 6px; }
+    .company-body h3 { margin:0 0 8px; color:#0f172a; font-weight:800; }
+    .company-body p { margin:0 0 14px; color:#475569; line-height:1.65; }
+    .company-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:14px; }
+    .label { color:#94a3b8; font-weight:700; font-size:0.85rem; text-transform:uppercase; }
+    .value { color:#0f172a; font-weight:800; font-size:1.1rem; }
+    .badge.success { background:#ecfdf3; color:#166534; padding:6px 10px; border-radius:10px; font-weight:700; border:1px solid #bbf7d0; }
+    .badge.warn { background:#fff7ed; color:#9a3412; padding:6px 10px; border-radius:10px; font-weight:700; border:1px solid #fed7aa; }
+
+    /* Company Modal form styling */
+    .form-grid { display:grid; grid-template-columns:1fr; gap:14px; }
+    .form-field label { display:block; font-weight:700; color:#1e293b; margin-bottom:6px; }
+    .form-field input, .form-field textarea { width:100%; padding:12px 14px; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; transition:0.2s; }
+    .form-field textarea { min-height:120px; resize:vertical; }
+    .form-field input:focus, .form-field textarea:focus { border-color:#2563eb; outline:none; background:white; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+    .help { color:#94a3b8; font-size:0.9rem; margin-top:4px; }
+
     /* Toggle Button */
     .mobile-toggle { display: none; background: white; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; color: #0f172a; align-items: center; gap: 8px; margin-bottom: 20px; }
     
@@ -344,9 +371,9 @@
             <div class="sidebar-item" onclick="switchTab('applications')">
                 📥 Applications <span class="badge">{{ applications.count|default:"0" }}</span>
             </div>
-            <a class="sidebar-item" href="{% url 'company_profile' %}" style="text-decoration:none;">
+            <div class="sidebar-item" onclick="switchTab('company')">
                 🏢 Company Profile
-            </a>
+            </div>
             <div class="sidebar-action">
                 <a href="{% url 'add_job' %}" class="btn-primary">➕ Post New Job</a>
             </div>
@@ -535,7 +562,7 @@
                                 <td class="job-date">{{ app.applied_at|date:"M d, Y" }}</td>
                                 <td>
                                     <div style="display:flex; gap:8px;">
-                                        {% if app.resume %}
+                                        {% if app.resume_exists %}
                                         <a href="{{ app.resume.url }}" target="_blank" class="action-btn btn-resume">
                                             📄 View Resume
                                         </a>
@@ -543,7 +570,7 @@
                                         <span class="action-btn btn-disabled">No Resume</span>
                                         {% endif %}
                                         
-                                        {% if app.cover_letter %}
+                                        {% if app.cover_letter_exists %}
                                         <button class="action-btn btn-cover cover-letter-btn" 
                                                 data-name="{{ app.full_name|escapejs }}" 
                                                 data-cover="{% filter force_escape %}{{ app.cover_letter }}{% endfilter %}">
@@ -566,6 +593,58 @@
             </div>
         </div>
 
+        <!-- SECTION: COMPANY PROFILE -->
+        <div id="tab-company" class="tab-section">
+            <h1 class="section-title">Company Profile</h1>
+            <div class="company-card">
+                <div class="company-card-header">
+                    <div class="company-logo">
+                        {% if company_profile and company_profile.company_logo %}
+                            <img src="{{ company_profile.company_logo.url }}" alt="logo" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            <span>{{ company_profile.company_name|slice:":2"|upper|default:user.username|slice:":2"|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="company-name">{{ company_profile.company_name|default:"Add your company name" }}</div>
+                        <div class="company-meta">
+                            {% if company_profile and company_profile.verified %}
+                                <span class="badge success">✅ Verified</span>
+                            {% else %}
+                                <span class="badge warn">⏳ Pending verification</span>
+                            {% endif %}
+                            {% if company_profile and company_profile.company_website %}
+                                <a href="{{ company_profile.company_website }}" target="_blank" class="link-pill">🔗 {{ company_profile.company_website }}</a>
+                            {% else %}
+                                <span class="link-pill muted">Add a website</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button class="btn-outline" onclick="openCompanyModal()">Edit profile</button>
+                </div>
+                <div class="company-body">
+                    <div>
+                        <h3>About</h3>
+                        <p>{{ company_profile.company_description|default:"Tell candidates about your mission, customers, and team." }}</p>
+                    </div>
+                    <div class="company-grid">
+                        <div>
+                            <div class="label">Company Type</div>
+                            <div class="value">{{ jobs.0.company_size|default:"Not specified" }}</div>
+                        </div>
+                        <div>
+                            <div class="label">Active roles</div>
+                            <div class="value">{{ stats.approved|default:"0" }}</div>
+                        </div>
+                        <div>
+                            <div class="label">Jobs posted</div>
+                            <div class="value">{{ stats.total|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 </div>
 
@@ -581,6 +660,45 @@
             <div id="modalCoverLetterText"></div>
         </div>
     </div>
+</div>
+
+<!-- Company Profile Modal -->
+<div class="modal-overlay" id="companyModal" onclick="if(event.target === this) closeModal('companyModal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">🏢 Company Profile</div>
+            <button class="btn-close" onclick="closeModal('companyModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="companyForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Company Name</label>
+                        {{ company_form.company_name }}
+                    </div>
+                    <div class="form-field">
+                        <label>Website</label>
+                        {{ company_form.company_website }}
+                    </div>
+                    <div class="form-field">
+                        <label>Description</label>
+                        {{ company_form.company_description }}
+                    </div>
+                    <div class="form-field">
+                        <label>Logo</label>
+                        {{ company_form.company_logo }}
+                        <div class="help">PNG/JPG, square recommended.</div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; padding:12px; margin-top:12px;">Save Company</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="companyToast" style="display:none; position:fixed; bottom:20px; right:20px; background:#ecfdf3; color:#166534; border:1px solid #bbf7d0; padding:12px 14px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.12); font-weight:700; z-index:9999;">
+    Company profile saved.
 </div>
 
 <!-- Edit Job Modal -->
@@ -774,6 +892,23 @@
                 document.body.style.overflow = 'hidden';
             });
         });
+
+        const companyForm = document.getElementById("companyForm");
+        if (companyForm) {
+            companyForm.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const formData = new FormData(companyForm);
+                fetch("{% url 'company_profile' %}", {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": getCookie('csrftoken') },
+                    body: formData
+                }).then(res => res.json())
+                  .then(() => {
+                    showCompanyToast();
+                    closeModal('companyModal');
+                  }).catch(() => closeModal('companyModal'));
+            });
+        }
     });
 
     function openCoverLetterModal(applicantName, coverLetterText) {
@@ -786,6 +921,33 @@
     function closeModal(modalId) {
         document.getElementById(modalId).classList.remove('show');
         document.body.style.overflow = '';
+    }
+
+    function openCompanyModal() {
+        document.getElementById('companyModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function showCompanyToast() {
+        const toast = document.getElementById('companyToast');
+        if (!toast) return;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2500);
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 </script>
 {% endblock %}

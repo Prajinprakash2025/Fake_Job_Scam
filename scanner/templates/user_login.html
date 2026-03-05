@@ -187,6 +187,11 @@
 
             <form method="post">
                 {% csrf_token %}
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% elif request.GET.next %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                {% endif %}
 
                 <div class="form-group">
                     <label for="username">Username</label>

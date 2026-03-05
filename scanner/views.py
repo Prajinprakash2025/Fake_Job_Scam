@@ -8,6 +8,7 @@ from .utils.pdf_extractor import extract_text_from_pdf
 from .ml.visualizations import get_dashboard_stats
 from .models import Profile, RecruiterProfile, JobPost, JobApplication
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.http import url_has_allowed_host_and_scheme
 
 
 ###################login sesSIon########################
@@ -140,6 +141,11 @@ def user_profile(request):
 # USER LOGIN
 def user_login(request):
     error = None
+    next_url = request.GET.get("next") or request.POST.get("next")
+
+    def safe_next(url):
+        return url and url_has_allowed_host_and_scheme(url, allowed_hosts={request.get_host()}, require_https=request.is_secure())
+
     if request.method == "POST":
         user = authenticate(
             request,
@@ -148,10 +154,12 @@ def user_login(request):
         )
         if user and user.profile.role == "user":
             login(request, user)
+            if safe_next(next_url):
+                return redirect(next_url)
             return redirect("home")
         else:
             error = "Invalid user credentials"
-    return render(request, "user_login.html", {"error": error})
+    return render(request, "user_login.html", {"error": error, "next": next_url})
 
 
 # USER SIGNUP
@@ -305,7 +313,13 @@ def is_recruiter(user):
 @user_passes_test(is_recruiter, login_url='login_select')
 def recruiter_dashboard(request):
     jobs = JobPost.objects.filter(recruiter=request.user)
-    applications = JobApplication.objects.filter(job__recruiter=request.user).order_by("-applied_at")
+    applications = list(JobApplication.objects.filter(job__recruiter=request.user).order_by("-applied_at"))
+    for app in applications:
+        app.resume_exists = bool(app.resume and app.resume.storage.exists(app.resume.name))
+        app.cover_letter_exists = bool(app.cover_letter)
+
+    company_profile = getattr(request.user, "recruiterprofile", None)
+    company_form = RecruiterProfileForm(instance=company_profile)
 
     stats = {
         "total": jobs.count(),
@@ -317,7 +331,9 @@ def recruiter_dashboard(request):
     return render(request, "recruiter/dashboard.html", {
         "jobs": jobs,
         "stats": stats,
-        "applications": applications
+        "applications": applications,
+        "company_form": company_form,
+        "company_profile": company_profile,
     })
 
 import json
@@ -486,15 +502,19 @@ def add_job(request):
 @login_required
 @user_passes_test(is_recruiter, login_url='login_select')
 def company_profile(request):
-    profile = getattr(request.user, "recruiterprofile", None)
+    profile, _ = RecruiterProfile.objects.get_or_create(user=request.user, defaults={"company_name": ""})
     if request.method == "POST":
         form = RecruiterProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             company = form.save(commit=False)
             company.user = request.user
             company.save()
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"status": "ok"})
             messages.success(request, "Company profile saved.")
             return redirect("company_profile")
+        elif request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"status": "error", "errors": form.errors}, status=400)
     else:
         form = RecruiterProfileForm(instance=profile)
 
@@ -620,12 +640,33 @@ def job_detail(request, job_id):
     already_applied = False
     if request.user.is_authenticated:
         already_applied = JobApplication.objects.filter(job=job, applicant=request.user).exists()
-    return render(request, "job_detail.html", {"job": job, "already_applied": already_applied})
+    related_jobs = (
+        JobPost.objects.filter(status="approved", category=job.category)
+        .exclude(id=job_id)
+        .select_related("recruiter__recruiterprofile")
+        .order_by("-created_at")[:6]
+    )
+    applicants_count = JobApplication.objects.filter(job=job).count()
+    company_active_count = (
+        JobPost.objects.filter(recruiter=job.recruiter, status="approved").exclude(id=job_id).count()
+    )
+
+    return render(
+        request,
+        "job_detail.html",
+        {
+            "job": job,
+            "already_applied": already_applied,
+            "related_jobs": related_jobs,
+            "applicants_count": applicants_count,
+            "company_active_count": company_active_count,
+        },
+    )
 
 
 # APPLY FOR JOB - Users only
-@login_required
-@user_passes_test(is_user, login_url='home')
+@login_required(login_url='user_login')
+@user_passes_test(is_user, login_url='user_login')
 def apply_job(request, job_id):
     job = get_object_or_404(JobPost, id=job_id, status="approved")
 

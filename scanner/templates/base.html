@@ -150,7 +150,6 @@
                             <a href="{% url 'user_profile' %}">👤 My Profile</a>
                             {% if user.profile.role == 'recruiter' %}
                                 <a href="{% url 'recruiter_dashboard' %}">💼 Dashboard</a>
-                                <a href="{% url 'company_profile' %}">🏢 Company Profile</a>
                             {% endif %}
                             {% if user.profile.role == 'admin' %}
                                 <a href="{% url 'admin_dashboard' %}">🛡️ Admin Panel</a>
@@ -170,6 +169,16 @@
             </ul>
         </nav>
     </header>
+
+    {% if messages %}
+    <div style="max-width:1200px; margin:10px auto 0; padding:0 20px;">
+        {% for message in messages %}
+            <div style="margin-bottom:8px; padding:12px 14px; border-radius:10px; background:#ecfdf3; color:#166534; border:1px solid #bbf7d0; font-weight:600;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <main>
         {% block content %}
