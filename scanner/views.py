@@ -252,6 +252,7 @@ def admin_login(request):
     return render(request, "admin_login.html", {"error": error})
 
 
+@login_required(login_url='user_login')
 def scan_job(request):
     result = None
     error = None

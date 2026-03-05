@@ -41,7 +41,4 @@ urlpatterns = [
     path("admins/recruiter/<int:recruiter_id>/toggle-verify/", views.toggle_recruiter_verify, name="toggle_recruiter_verify"),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
 
-
-
-
 ]
