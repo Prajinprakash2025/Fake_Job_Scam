@@ -39,6 +39,12 @@ urlpatterns = [
     path("admins/review/<int:job_id>/", review_job, name="review_job"),
     path("admins/user/<int:user_id>/toggle-status/", views.toggle_user_status, name="toggle_user_status"),
     path("admins/recruiter/<int:recruiter_id>/toggle-verify/", views.toggle_recruiter_verify, name="toggle_recruiter_verify"),
+    
+    # PASSWORD RESET
+    path("forgot-password/", views.forgot_password, name="forgot_password"),
+    path("otp-verify/", views.otp_verify, name="otp_verify"),
+    path("reset-password/", views.reset_password, name="reset_password"),
+    
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
 
 ]

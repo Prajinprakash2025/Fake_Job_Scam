@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP | SafeCareer</title>
+    <style>
+        :root {
+            --primary-dark: #0f172a; 
+            --primary-blue: #2563eb; 
+            --blue-hover: #1d4ed8;
+            --bg-light: #f1f5f9;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --danger-red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 28px; font-weight: 800; color: var(--primary-dark);
+            text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-bottom: 30px;
+        }
+        .logo span { color: var(--primary-blue); }
+
+        h3 { font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 12px; }
+        p { color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; line-height: 1.5; }
+
+        .error-msg {
+            background-color: #fee2e2; color: var(--danger-red);
+            padding: 12px; border-radius: 10px; margin-bottom: 25px;
+            font-size: 0.9rem; font-weight: 600; border: 1px solid var(--danger-red);
+        }
+
+        .form-group { margin-bottom: 22px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--primary-dark); }
+        .form-group input {
+            width: 100%; padding: 14px 16px; border: 1.5px solid #cbd5e1;
+            border-radius: 10px; font-size: 1.2rem; transition: 0.2s;
+            background: #f8fafc;
+            text-align: center;
+            letter-spacing: 10px;
+        }
+        .form-group input:focus {
+            outline: none; border-color: var(--primary-blue); background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%; background: var(--primary-blue); color: white; border: none;
+            padding: 15px; font-size: 1.05rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s;
+            margin-bottom: 20px;
+        }
+        .btn-submit:hover { background: var(--blue-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+
+        .back-link { font-size: 0.9rem; color: var(--primary-blue); text-decoration: none; font-weight: 600; }
+        .back-link:hover { text-decoration: underline; }
+
+        .terminal-note {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <a href="/" class="logo">🛡️ Safe<span>Career</span></a>
+        
+        <h3>Verify OTP</h3>
+        <p>Please enter the 6-digit OTP sent to your email. (Check your server terminal for the code)</p>
+
+        {% if error %}
+        <div class="error-msg">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="otp">Enter 6-Digit Code</label>
+                <input type="text" id="otp" name="otp" maxlength="6" required placeholder="000000">
+            </div>
+
+            <button type="submit" class="btn-submit">Verify OTP</button>
+        </form>
+
+        <a href="{% url 'forgot_password' %}" class="back-link">← Try another email</a>
+        
+        <div class="terminal-note">
+            ℹ️ <b>Dev Tip:</b> The OTP is printed in the server console/terminal window.
+        </div>
+    </div>
+
+</body>
+</html>

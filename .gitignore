@@ -44,6 +44,9 @@ venv.bak/
 
 # Environment variables
 .env
+
+# Environment variables
+.env
 .env.local
 
 # OS
@@ -53,3 +56,9 @@ Thumbs.db
 # Project specific
 /job_pdfs/
 /resumes/
+
+# Documentation
+FINAL_PROJECT_DOCUMENTATION.md
+PROJECT_REPORT.md
+PROJECT_REPORT.docx
+PROJECT_REPORT.pdf

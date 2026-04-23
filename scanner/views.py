@@ -765,3 +765,60 @@ def search_jobs(request):
         },
     )
 
+
+
+def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        if User.objects.filter(email=email).exists():
+            otp = str(random.randint(100000, 999999))
+            request.session["reset_email"] = email
+            request.session["reset_otp"] = otp
+            
+            # PRINT OTP TO TERMINAL
+            print("\n" + "="*30)
+            print(f"PASSWORD RESET OTP FOR {email}: {otp}")
+            print("="*30 + "\n")
+            
+            return redirect("otp_verify")
+        else:
+            return render(request, "forgot_password.html", {"error": "Email not found."})
+    
+    return render(request, "forgot_password.html")
+
+def otp_verify(request):
+    if request.method == "POST":
+        user_otp = request.POST.get("otp")
+        session_otp = request.session.get("reset_otp")
+        
+        if user_otp == session_otp:
+            return redirect("reset_password")
+        else:
+            return render(request, "otp_verify.html", {"error": "Invalid OTP."})
+            
+    return render(request, "otp_verify.html")
+
+def reset_password(request):
+    if request.method == "POST":
+        password = request.POST.get("password")
+        confirm = request.POST.get("confirm")
+        email = request.session.get("reset_email")
+        
+        if not email:
+             return redirect("forgot_password")
+
+        if password == confirm:
+            user = User.objects.get(email=email)
+            user.set_password(password)
+            user.save()
+            
+            # Clean up session
+            if "reset_otp" in request.session: del request.session["reset_otp"]
+            if "reset_email" in request.session: del request.session["reset_email"]
+            
+            messages.success(request, "Password reset successful! You can now log in.")
+            return redirect("login_select")
+        else:
+            return render(request, "reset_password.html", {"error": "Passwords do not match."})
+            
+    return render(request, "reset_password.html")
