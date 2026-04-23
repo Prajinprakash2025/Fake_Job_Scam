@@ -62,3 +62,10 @@ FINAL_PROJECT_DOCUMENTATION.md
 PROJECT_REPORT.md
 PROJECT_REPORT.docx
 PROJECT_REPORT.pdf
+
+# Test files and scratch
+generate_safe_pdf.py
+generate_scam_pdf.py
+safe_test_document.pdf
+scam_test_document.pdf
+scratch/
