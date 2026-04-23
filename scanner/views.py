@@ -203,7 +203,14 @@ def recruiter_login(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        user = authenticate(request, username=email, password=password)
+        user = None
+        # 🔍 IMPROVED: Find user by email case-insensitively first
+        try:
+            target_user = User.objects.get(username__iexact=email)
+            user = authenticate(request, username=target_user.username, password=password)
+        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            # Fallback to standard authenticate if username__iexact fails or returns multiple
+            user = authenticate(request, username=email, password=password)
 
         if user:
             # Check if they have a profile and are a recruiter
@@ -808,9 +815,16 @@ def reset_password(request):
              return redirect("forgot_password")
 
         if password == confirm:
-            user = User.objects.get(email=email)
-            user.set_password(password)
-            user.save()
+            # 🔍 FIXED: Handle multiple users with same email by resetting all of them
+            # This ensures that if a recruiter has a user account too, both get updated.
+            users = User.objects.filter(email__iexact=email)
+            if not users.exists():
+                 # Fallback to reset_email session just in case
+                 return redirect("forgot_password")
+            
+            for user in users:
+                user.set_password(password)
+                user.save()
             
             # Clean up session
             if "reset_otp" in request.session: del request.session["reset_otp"]
@@ -822,3 +836,29 @@ def reset_password(request):
             return render(request, "reset_password.html", {"error": "Passwords do not match."})
             
     return render(request, "reset_password.html")
+
+
+@login_required
+def change_password(request):
+    if request.method == "POST":
+        old_password = request.POST.get("old_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if not request.user.check_password(old_password):
+            messages.error(request, "Incorrect current password.")
+        elif new_password != confirm_password:
+            messages.error(request, "New passwords do not match.")
+        elif len(new_password) < 6:
+            messages.error(request, "Password must be at least 6 characters.")
+        else:
+            request.user.set_password(new_password)
+            request.user.save()
+            # Important: update session to keep user logged in
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, request.user)
+            messages.success(request, "Password updated successfully!")
+            
+        return redirect("user_profile")
+    
+    return redirect("user_profile")
